@@ -1,0 +1,18 @@
+.board-container{
+
+    width: 400px;
+    height: 400px;
+
+    box-sizing: border-box;
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(100px,1fr));
+    grid-template-rows: repeat(3, minmax(100px,1fr));
+    gap: 0.5rem 0.5rem;
+    background-color: rgb(78, 81, 83);
+}
+
+.board-container div{
+    border-radius: 10px;
+    background-color: white;
+}
