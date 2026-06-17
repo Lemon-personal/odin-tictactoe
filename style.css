@@ -17,6 +17,7 @@ div.disabled{
 }
 
 .game{
+    width:500px;
     font-family: "roboto", sans-serif;
     color: white;
     box-sizing: border-box;
@@ -32,8 +33,7 @@ div.disabled{
 
 
 .board-container{
-    width: 400px;
-    height: 400px;
+    height: 500px;
 
     box-sizing: border-box;
     padding: 1rem;
@@ -56,7 +56,6 @@ div.disabled{
     display: flex;
     justify-content: space-evenly;
     box-sizing: border-box;
-    width: 400px;
     background-color: rgb(97, 113, 150);
     border: solid 5px black;
     border-top-left-radius: 10px;
@@ -65,22 +64,42 @@ div.disabled{
 }
 
 .scoreboard section{
-    width: 6rem;
+    width: 10rem;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
 }
 
+.scoreboard .name{
+    width: 9rem; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0px;
+}
+
 .scoreboard h1{
     margin: 0px;
 }
 
-.scoreboard img{
+
+
+.scoreboard .turn-arrow{
     width: 75px;
     height: 75px;
+
+    transition: all 0.5s;
 }
 
+.player1-score, .player2-score{
+    box-sizing: border-box;
+}
+
+.player1-score.turn, .player2-score.turn{
+   background-color: rgb(68, 79, 104);
+   border: 2px solid black;
+   border-radius: 10px;
+}
 
 .main-menu{
     box-sizing: border-box;
