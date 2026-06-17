@@ -1,11 +1,12 @@
 const gameboard = (() => {
     let boardContainer = document.querySelector(".board-container")
+    let playable = true
+
     let boardSquares = (()=>{
         let squareArray = new Array()
 
         for (let i = 0; i < 3; i++){
             let row = new Array()
-
             for (let j = 0; j < 3; j++){
 
                 let square = (() => { 
@@ -18,14 +19,14 @@ const gameboard = (() => {
 
                     sElem.setAttribute("id", `${i}${j}`)
 
-                    sElem.addEventListener("click",e => boardController.playRound(e.currentTarget.getAttribute("id")))
+                    sElem.addEventListener("click",(e) => {if (playable) {boardController.playRound(e.currentTarget.getAttribute("id"))}})
 
                     sElem.appendChild(sImg)
                     boardContainer.appendChild(sElem)
 
                     return {sElem, sImg, playerMark, played, sId}
                 })();
-
+                
                 row.push(square)
             }
         
@@ -64,28 +65,48 @@ const gameboard = (() => {
         return false
     }
 
-    const clearBoard = () => {
-        for (let i = 0; i < 9; i++){
-            boardSquares[i].querySelector("img").setAttribute("src", "");
+    const resetBoard = () => {
+        for (let i = 0; i < 3; i++){
+            for (let j = 0; j < 3; j++){
+                boardSquares[i][j].played = false
+                boardSquares[i][j].sImg.setAttribute("src", "")
+                boardSquares[i][j].playerMark = ""
+            }
         }
     }
 
-    return {boardSquares, boardContainer, clearBoard, checkRow, checkColumn, checkDiagonal}
+    const setPlayable = (p) => {
+        playable = p
+    }
+
+    return {boardSquares, boardContainer, setPlayable, checkRow, checkColumn, checkDiagonal , resetBoard}
 
 })();
 
 const boardController = (()=>{
     let currPlayer
-    let gamers
+    let roundWinner
+    let round = 1
+    let players
 
-    const nextRound = (prevRoundWinner) => {
-        currPlayer = prevRoundWinner
+    console.log(gameboard.boardSquares)
+
+    const nextRound = (e) => {
+        if (currPlayer.id == 1){
+            currPlayer = players[1]
+        }else{
+            currPlayer = players[0]
+        }
+
+        round += 1
+        displayController.displayResults(roundWinner, round, false)
+        displayController.updateScoreboard(roundWinner, round)
     }
 
     const playRound = (id) => {
         let row = id[0]
         let column = id[1]
-
+        let playerWon = false
         let playedSquare = gameboard.boardSquares[row][column]
 
         if (!playedSquare.played){
@@ -94,47 +115,62 @@ const boardController = (()=>{
             if (currPlayer.id == 1){
                 playedSquare.sImg.setAttribute("src", "icons/close (1).svg")
                 playedSquare.playerMark = "x"
-                checkWin(row, column)
-                currPlayer = gamers[1]
+                playerWon = checkWin(row, column)
             }else{
                 playedSquare.sImg.setAttribute("src", "icons/circle-outline.svg")
                 playedSquare.playerMark = "o"
-                checkWin(row, column)
-                currPlayer = gamers[0]
+                playerWon = checkWin(row, column)
             }
         }
+
+        if (playerWon){
+            roundWinner = currPlayer
+            roundWinner.incrementPoints()
+            displayController.displayResults(roundWinner, round, true)
+
+            round = 0
+            return;
+        }
+
+        if (currPlayer.id == 1){
+            currPlayer = players[1]
+        }else{
+            currPlayer = players[0]
+        }
+
+        //displayController.updateScoreboard()
+
     }
 
 
-    const setPlayers = (players) => {
+    const setPlayers = (p) => {
+        players = p
         currPlayer = players[0]
-        gamers = players
     }
 
 
     function checkWin(row, column){
     
         if(gameboard.checkRow(row)){
-            console.log(currPlayer)
             return true
         }
         if(gameboard.checkColumn(column)){
-            console.log(currPlayer)
             return true
         }
         if (gameboard.checkDiagonal()){
-            console.log(currPlayer)
             return true
         }
 
     }
 
-    return {playRound, setPlayers}   
+    return {playRound, setPlayers, nextRound}   
 })();
 
 const displayController = (() => {
     const mainMenu = document.querySelector(".main-menu")
-    const game = document.querySelector(".board-container")
+    const game = document.querySelector(".game")
+    const resultDiv = document.querySelector(".results")
+    const scoreBoard = document.querySelector(".scoreboard")
     const startGame = document.querySelector(".start-game")
 
     startGame.addEventListener("click", e => initGame())
@@ -145,8 +181,6 @@ const displayController = (() => {
         players.push(player(1, 'x', menuInputs[0].value))
         players.push(player(2,'o', menuInputs[1].value))
 
-        menuInputs[0].invalid = true
-
         if(players[0].name === ""){
             players[0].name = "Player 1"
         }
@@ -154,34 +188,75 @@ const displayController = (() => {
             players[1].name = "Player 2"
         }
 
+        boardController.setPlayers(players)
+
+        mainMenu.classList.add("disabled")
+        game.classList.remove("disabled")
 
 
         console.log(players)
     }
 
+    const initResultDiv = (() => {
+        const quitButton = resultDiv.querySelector(".quit")
+        const continueButton = resultDiv.querySelector(".continue")
 
+        resultDiv.style.transform = 'translateY(-300%)'
+
+        continueButton.addEventListener("click", boardController.nextRound)
+    })();
+
+    const displayResults = (player, round, state) => {
+        if (state){
+            gameboard.setPlayable(false)
+            resultDiv.classList.remove("disabled")
+            setTimeout(()=>resultDiv.style.transform = 'translateY(0%)', 20)
+
+            resultDiv.querySelector("h1").textContent = `ROUND ${round} WINNER`
+            resultDiv.querySelector("h3").textContent = `${player.name}`.toUpperCase()
+        }else{
+            gameboard.setPlayable(true)
+            setTimeout(()=>resultDiv.style.transform = 'translateY(300%)', 20)
+        }
+    }
+
+    const updateScoreboard = (player, round) => {
+
+        if (Number(player.id) === 1){
+            scoreBoard.querySelector(".player1-score .score").textContent = `${player.getPoints()}`
+        }
+        else{
+            scoreBoard.querySelector(".player2-score .score").textContent = `${player.getPoints()}`
+        }
+    }
+
+    return {displayResults, updateScoreboard}
 })();
 
 const players = () => {
     let gamers = new Array()
 
-    function player(id, mark){
-        return {id, mark}
-    }
-
-    let player1 = player(1 , "x")
+    let player1 = player(1 , "x", "player1")
     gamers.push(player1)
-    let player2 = player(2, "o")
+    let player2 = player(2, "o", "player")
     gamers.push(player2)
-
-
 
 
     return gamers
 }
 
 const player = (id, mark, name) => {
-        return {id, mark, name}
+    let points = 0
+
+    const incrementPoints = () => {
+        points += 1
+    }
+
+    const getPoints = () => {
+        return points
+    }
+
+    return {id, mark, name, incrementPoints, getPoints}
 }
 
 let ps = players()
@@ -189,3 +264,5 @@ let ps = players()
 boardController.setPlayers(ps)
 
 
+const reset = document.querySelector(".continue")
+reset.addEventListener('click', e => gameboard.resetBoard())

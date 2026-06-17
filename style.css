@@ -156,3 +156,47 @@ input[name="name-input"]{
 
     border-radius: 10px;
 }
+
+.results{
+    font-family: "roboto", sans-serif;
+    font-weight: bold;
+    font-size: 2rem;
+
+    box-sizing: border-box;
+    background-color: rgb(79, 116, 148);
+    position: fixed;
+    padding: 1rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-self: center;
+
+    width: 100vw;
+    height: max-content;
+
+
+    transition: transform 1s allow-discrete,
+                display 1s allow-discrete;
+}
+
+@starting-style{
+    .results{
+        transform: translateY(-300%);
+    }
+}
+
+.results .continue, .quit{
+    background-color: rgba(238, 185, 86, 0.973);
+    font-family: "roboto", sans-serif;
+    font-weight: bold;
+    font-size: 2rem;
+    width: 300px;
+    height: 50px;
+    border-radius: 10px;
+}
+.results .quit{
+    background-color: rgba(204, 198, 186, 0.973);
+    width: 200px;
+    height: 50px;
+}
